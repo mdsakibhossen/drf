@@ -6,12 +6,17 @@ from rest_framework.renderers import JSONRenderer
 import io
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
 
 
 # Create your views here.
-@csrf_exempt
-def students(request, pk=None):
-    if request.method == "GET":
+@method_decorator(csrf_exempt, name="dispatch")
+class StudentAPI(View):
+    def get(self, request, *args, **kwargs):
+        # print("Args", args)
+        # print("KWArgs", kwargs)
+        pk = kwargs.get("pk")
         try:
             if pk == None:
                 stu = Student.objects.all()
@@ -24,7 +29,7 @@ def students(request, pk=None):
         except Student.DoesNotExist:
             return JsonResponse({"error": "Student Not Found"}, status=404)
 
-    if request.method == "POST":
+    def post(self, request, *args, **kwargs):
         json_data = request.body
         stream = io.BytesIO(json_data)
         python_data = JSONParser().parse(stream)
@@ -36,7 +41,8 @@ def students(request, pk=None):
             )
         return JsonResponse(serializer.errors)
 
-    if request.method == "PATCH":
+    def patch(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
         stu = Student.objects.get(id=pk)
         json_data = request.body
         stream = io.BytesIO(json_data)
@@ -52,7 +58,8 @@ def students(request, pk=None):
             )
         return JsonResponse(serializer.errors, status=400)
 
-    if request.method == "PUT":
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
         stu = Student.objects.get(id=pk)
         json_data = request.body
         stream = io.BytesIO(json_data)
@@ -68,7 +75,8 @@ def students(request, pk=None):
             )
         return JsonResponse(serializer.errors, status=400)
 
-    if request.method == "DELETE":
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
         try:
             stu = Student.objects.get(id=pk)
             stu.delete()
